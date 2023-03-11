@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
 from genetic_backbone import *
+from melody import *
 
 app = FastAPI()
 
@@ -19,15 +20,12 @@ app.add_middleware(
 
 db=[]
 
-popn = Population(5, 256, fit) 
-popn.fitness() 
+popn = Population(5, 256, fit)  
 
 @app.get("/generate")
-def test(scale):
-    for i in range(50):
-        if popn.move_generation(debug=False):
-            db.append((i, popn.population[0]))
-    return db
+def test(details:dict):
+    return genome_midi_decoder(popn,)
+    
 
 # @app.post("/hello")
 # def add_greeting(message:Data):

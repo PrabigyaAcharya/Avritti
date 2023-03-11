@@ -29,7 +29,5 @@ def genome_midi_decoder(population, bits_per_note=4, num_of_notes=64, scale=None
         print(file_name)
         with open(file_name, "wb") as output_file:
             MyMIDI.writeFile(output_file)
+    return True
 
-
-popn = Population(5, 256, fit)
-genome_midi_decoder(popn)

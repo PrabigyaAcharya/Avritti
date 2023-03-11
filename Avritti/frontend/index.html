@@ -33,37 +33,140 @@
       src="./js/util/dom_request_script.js"
       type="text/javascript"
     ></script>
+    <!-- Vue js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Pico CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@picocss/pico@1.*/css/pico.min.css"
+    />
 
     <title>Avritti</title>
+    <style>
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
-    <button id="playButton">Play</button>
+    <header>
+      <h1>Avritti</h1>
+      <h6>Music Generation with Genetic Algorithm</h6>
+    </header>
+    <main id="app" class="container">
+      <div id="home" v-if="state=='home'">
+        <form @submit.prevent="startGeneration">
+          <label for="scaleSelector">Select scale:</label>
+          <select
+            name="scaleSelector"
+            id="scaleSelector"
+            v-model="scaleSelector"
+          >
+            <option v-for="(scale, idx) in scaleList" :value="scale" :key="idx">
+              {{scale}}
+            </option>
+          </select>
+          <label for="startNoteSelector">Select start note:</label>
+          <select
+            name="startNoteSelector"
+            id="startNoteSelector"
+            v-model="startNoteSelector"
+          >
+            <option
+              v-for="(startNote, idx) in startNoteList"
+              :value="startNote"
+              :key="idx"
+            >
+              {{startNote}}
+            </option>
+          </select>
+          <label for="octaveSelector">Select Octave:</label>
+          <input
+            name="octaveSelector"
+            id="octaveSelector"
+            type="range"
+            min="1"
+            max="4"
+            v-model="octaveSelector"
+          />
+          <button>Generate</button>
+        </form>
+      </div>
+      <div id="home" v-if="state=='nothome'">
+        <button @click="play">Play</button>
+      </div>
+    </main>
   </body>
+
   <script type="text/javascript" defer>
-    document.querySelector("#playButton").addEventListener("click", () => {
-      play();
-    });
-    const play = function () {
-      MIDI.loadPlugin({
-        soundfontUrl: "./soundfont/",
-        instrument: "acoustic_grand_piano",
-        onprogress: function (state, progress) {
-          console.log(state, progress);
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          message: "Hello Vue!",
+          state: "home",
+          scaleList: ["major", "acoustic", "blues", "lydian"],
+          startNoteList: [
+            "C",
+            "C#",
+            "D",
+            "D#",
+            "E",
+            "F",
+            "F#",
+            "G",
+            "G#",
+            "A",
+            "A#",
+            "B",
+          ],
+          scaleSelector: "blues",
+          startNoteSelector: "D#",
+          octaveSelector: "3",
+        };
+      },
+      methods: {
+        async startGeneration() {
+          console.log("Generating");
+          let fakeRequest = new Promise((resolve) => {
+            setTimeout(() => {
+              resolve();
+            }, 1000);
+          });
+          await fakeRequest;
+          this.state = "nothome";
         },
-        onsuccess: function () {
-          var delay = 0; // play one note every quarter second
-          var note = 50; // the MIDI note
-          var velocity = 127; // how hard the note hits
-          // play the note
-          MIDI.setVolume(0, 127);
-          MIDI.noteOn(0, note, velocity, delay);
-          MIDI.noteOff(0, note, delay + 0.75);
+        play() {
+          this.state = 1;
+          MIDI.loadPlugin({
+            soundfontUrl: "./soundfont/",
+            // instrument: "acoustic_grand_piano",
+            instrument: "synth_drum",
+            onprogress: function (state, progress) {
+              console.log(state, progress);
+            },
+            onsuccess: function () {
+              var delay = 0; // play one note every quarter second
+              var note = 50; // the MIDI note
+              var velocity = 127; // how hard the note hits
+              // play the note
+              MIDI.setVolume(0, 127);
+              MIDI.noteOn(0, note, velocity, delay);
+              MIDI.noteOff(0, note, delay + 0.75);
+            },
+          });
+          MIDI.Player.loadFile("../output/op.mid", () => {
+            MIDI.Player.start();
+            console.log("Playing");
+          });
         },
-      });
-      MIDI.Player.loadFile("../output/op.mid", () => {
-        MIDI.Player.start();
-        console.log("Playing");
-      });
-    };
+      },
+    }).mount("#app");
   </script>
 </html>

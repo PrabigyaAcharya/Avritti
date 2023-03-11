@@ -4,7 +4,7 @@ from genetic_backbone import Genome, Population
 import musical_scales
 
 def fit():
-    return random.randint(1, 5)
+    return random.randint(1, 6)
 
 
 def genome_midi_decoder(population, note:str = "C", octave:int = 3, bits_per_note=4, num_of_notes=64, scale:str = "major"):

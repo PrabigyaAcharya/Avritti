@@ -40,7 +40,15 @@
       rel="stylesheet"
       href="https://unpkg.com/@picocss/pico@1.*/css/pico.min.css"
     />
-
+    <!-- Material Icons -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
     <title>Avritti</title>
     <style>
       h1,
@@ -82,72 +90,93 @@
         display: flex;
         gap: 20px;
       }
+      #title {
+        cursor: pointer;
+      }
+      #app {
+        margin-top: 100px;
+      }
     </style>
   </head>
   <body>
-    <header>
-      <h1>Avritti</h1>
-      <h6>Music Generation with Genetic Algorithm</h6>
-    </header>
-    <main id="app" class="container">
-      <!-- Loading spinner -->
-      <div id="loading-spinner" v-if="showLoadingSpinner">
-        <div class="lds-dual-ring"></div>
-      </div>
-      <div id="home" v-if="state=='home'">
-        <form @submit.prevent="startGeneration">
-          <label for="scaleSelector">Select scale:</label>
-          <select name="scaleSelector" id="scaleSelector" v-model="scale">
-            <option v-for="(scale, idx) in scaleList" :value="scale" :key="idx">
-              {{scale}}
-            </option>
-          </select>
-          <label for="startNoteSelector">Select start note:</label>
-          <select
-            name="startNoteSelector"
-            id="startNoteSelector"
-            v-model="note"
-          >
-            <option
-              v-for="(startNote, idx) in startNoteList"
-              :value="startNote"
-              :key="idx"
+    <div id="app">
+      <header>
+        <div @click="state='home'">
+          <h1 id="title">Avritti</h1>
+        </div>
+        <h6>Music Generation with Genetic Algorithm</h6>
+      </header>
+      <main class="container">
+        <!-- Loading spinner -->
+        <div id="loading-spinner" v-if="showLoadingSpinner">
+          <div class="lds-dual-ring"></div>
+        </div>
+        <div id="home" v-if="state=='home'">
+          <form @submit.prevent="startGeneration">
+            <label for="scaleSelector">Select scale:</label>
+            <select name="scaleSelector" id="scaleSelector" v-model="scale">
+              <option
+                v-for="(scale, idx) in scaleList"
+                :value="scale"
+                :key="idx"
+              >
+                {{scale}}
+              </option>
+            </select>
+            <label for="startNoteSelector">Select start note:</label>
+            <select
+              name="startNoteSelector"
+              id="startNoteSelector"
+              v-model="note"
             >
-              {{startNote}}
-            </option>
-          </select>
-          <label for="octaveSelector">Select Octave:</label>
-          <input
-            name="octaveSelector"
-            id="octaveSelector"
-            type="range"
-            min="1"
-            max="4"
-            v-model="octave"
-          />
-          <button>Generate</button>
-        </form>
-      </div>
-      <div id="rate-music" v-if="state=='rateMusic'">
-        <div class="flex">
-          <article v-for="idx in populationSize" :key="idx">
-            {{idx}}
-            <button @click="play(idx)">Play</button>
-            <label for="`rate${idx}`">Rate {{idx}}:</label>
+              <option
+                v-for="(startNote, idx) in startNoteList"
+                :value="startNote"
+                :key="idx"
+              >
+                {{startNote}}
+              </option>
+            </select>
+            <label for="octaveSelector">Select Octave:</label>
             <input
-              name="`rate${idx}`"
+              name="octaveSelector"
+              id="octaveSelector"
               type="range"
               min="1"
-              max="5"
-              class="rating-input"
+              max="4"
+              v-model="octave"
             />
-          </article>
+            <button>Generate</button>
+          </form>
         </div>
-        <button id="submit-ratings" @click="submitRatings">
-          Submit Ratings
-        </button>
-      </div>
-    </main>
+        <div id="rate-music" v-if="state=='rateMusic'">
+          <div class="flex">
+            <article v-for="idx in populationSize" :key="idx">
+              <header><center>Sample {{idx}}</center></header>
+              <button @click="play(idx)">Play</button>
+              <label for="`rate${idx}`">Rate {{idx}}:</label>
+              <input
+                name="`rate${idx}`"
+                type="range"
+                min="1"
+                max="5"
+                class="rating-input"
+              />
+            </article>
+          </div>
+          <label for="stopGeneration"
+            ><input
+              type="checkbox"
+              v-model="stopGeneration"
+              name="stopGeneration"
+            />Stop Generation?
+          </label>
+          <button id="submit-ratings" @click="submitRatings">
+            Submit Ratings
+          </button>
+        </div>
+      </main>
+    </div>
   </body>
 
   <script type="text/javascript" defer>
@@ -181,8 +210,10 @@
           populationSize: 5,
           ratings: [],
           midiList: [],
+          stopGeneration: false,
         };
       },
+
       methods: {
         async startGeneration() {
           this.showLoadingSpinner = true;
@@ -206,15 +237,32 @@
           this.state = "rateMusic";
           this.showLoadingSpinner = false;
         },
-        submitRatings() {
+        async submitRatings() {
+          this.showLoadingSpinner = true;
+
           this.ratings = [];
           document.querySelectorAll(".rating-input").forEach((node) => {
             this.ratings.push(node.value);
           });
           // .map((ip) => ip.value);
           console.log(this.ratings);
+          await fetch(`${this.serverURL}/rate`, {
+            method: "POST",
+            body: JSON.stringify({
+              stopGeneration: this.stopGeneration,
+              ratings: this.ratings,
+            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          this.showLoadingSpinner = false;
         },
-        play(idx) {
+        goHome() {
+          console.log("hello");
+          this.state = "home";
+        },
+        mounted() {
           MIDI.loadPlugin({
             soundfontUrl: "./soundfont/",
             // instrument: "acoustic_grand_piano",
@@ -232,11 +280,13 @@
               MIDI.noteOff(0, note, delay + 0.75);
             },
           });
+        },
+        play(idx) {
           MIDI.Player.loadFile(
             `data:audio/midi;base64,${this.midiList[idx - 1]}`,
             () => {
               MIDI.Player.start();
-              console.log("Playing");
+              this.isPlaying = true;
             }
           );
         },

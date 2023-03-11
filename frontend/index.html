@@ -62,11 +62,7 @@
       <div id="home" v-if="state=='home'">
         <form @submit.prevent="startGeneration">
           <label for="scaleSelector">Select scale:</label>
-          <select
-            name="scaleSelector"
-            id="scaleSelector"
-            v-model="scaleSelector"
-          >
+          <select name="scaleSelector" id="scaleSelector" v-model="scale">
             <option v-for="(scale, idx) in scaleList" :value="scale" :key="idx">
               {{scale}}
             </option>
@@ -75,7 +71,7 @@
           <select
             name="startNoteSelector"
             id="startNoteSelector"
-            v-model="startNoteSelector"
+            v-model="note"
           >
             <option
               v-for="(startNote, idx) in startNoteList"
@@ -92,7 +88,7 @@
             type="range"
             min="1"
             max="4"
-            v-model="octaveSelector"
+            v-model="octave"
           />
           <button>Generate</button>
         </form>
@@ -126,14 +122,34 @@
             "A#",
             "B",
           ],
-          scaleSelector: "blues",
-          startNoteSelector: "D#",
-          octaveSelector: "3",
+          scale: "blues",
+          note: "D#",
+          octave: "3",
+          serverURL: "http://127.0.0.1:8000",
         };
       },
       methods: {
         async startGeneration() {
-          console.log("Generating");
+          console.log(
+            JSON.stringify({
+              note: this.note,
+              octave: this.octave,
+              scale: this.scale,
+            })
+          );
+          let res = await fetch(`${this.serverURL}/generate`, {
+            method: "POST",
+            body: JSON.stringify({
+              note: this.note,
+              octave: this.octave,
+              scale: this.scale,
+            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          res = await res.JSON();
+          console.log(res);
           let fakeRequest = new Promise((resolve) => {
             setTimeout(() => {
               resolve();

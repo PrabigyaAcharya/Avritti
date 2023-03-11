@@ -28,7 +28,7 @@ def genome_midi_decoder(population, note:str = "C", octave:int = 3, bits_per_not
             for i, pitch in enumerate(midinotes):
                 MyMIDI.addNote(track, channel, pitch, time + i, duration, volume)
             
-            file_name = "testmidi_" + str(count)
+            file_name = f"output/testmidi_{str(count)}"
             count+=1
             with open(file_name, "wb") as output_file:
                 MyMIDI.writeFile(output_file)

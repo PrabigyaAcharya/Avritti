@@ -24,7 +24,7 @@ popn = Population(5, 256, fit)
 
 @app.get("/generate")
 def test(details:dict):
-    return genome_midi_decoder(popn,)
+    return genome_midi_decoder(population=popn,note=details["note"],octave=details["octave"],scale=details["scale"])
     
 
 # @app.post("/hello")

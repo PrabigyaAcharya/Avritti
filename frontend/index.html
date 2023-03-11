@@ -51,6 +51,37 @@
       h6 {
         text-align: center;
       }
+      #loading-spinner {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+      }
+      .lds-dual-ring {
+        display: inline-block;
+      }
+      .lds-dual-ring:after {
+        content: " ";
+        display: block;
+        width: 64px;
+        height: 64px;
+        margin: 8px;
+        border-radius: 50%;
+        border: 6px solid #fff;
+        border-color: #fff transparent #fff transparent;
+        animation: lds-dual-ring 1.2s linear infinite;
+      }
+      @keyframes lds-dual-ring {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .flex {
+        display: flex;
+        gap: 20px;
+      }
     </style>
   </head>
   <body>
@@ -59,6 +90,10 @@
       <h6>Music Generation with Genetic Algorithm</h6>
     </header>
     <main id="app" class="container">
+      <!-- Loading spinner -->
+      <div id="loading-spinner" v-if="showLoadingSpinner">
+        <div class="lds-dual-ring"></div>
+      </div>
       <div id="home" v-if="state=='home'">
         <form @submit.prevent="startGeneration">
           <label for="scaleSelector">Select scale:</label>
@@ -93,8 +128,24 @@
           <button>Generate</button>
         </form>
       </div>
-      <div id="home" v-if="state=='nothome'">
-        <button @click="play">Play</button>
+      <div id="rate-music" v-if="state=='rateMusic'">
+        <div class="flex">
+          <article v-for="idx in populationSize" :key="idx">
+            {{idx}}
+            <button @click="play(idx-1)">Play</button>
+            <label for="`rate${idx}`">Rate {{idx}}:</label>
+            <input
+              name="`rate${idx}`"
+              type="range"
+              min="1"
+              max="5"
+              class="rating-input"
+            />
+          </article>
+          <button id="submit-ratings" @click="submitRatings">
+            Submit Ratings
+          </button>
+        </div>
       </div>
     </main>
   </body>
@@ -126,40 +177,41 @@
           note: "D#",
           octave: "3",
           serverURL: "http://127.0.0.1:8000",
+          showLoadingSpinner: false,
+          populationSize: 5,
+          ratings: [],
         };
       },
       methods: {
         async startGeneration() {
-          console.log(
-            JSON.stringify({
-              note: this.note,
-              octave: this.octave,
-              scale: this.scale,
-            })
-          );
-          let res = await fetch(`${this.serverURL}/generate`, {
-            method: "POST",
-            body: JSON.stringify({
-              note: this.note,
-              octave: this.octave,
-              scale: this.scale,
-            }),
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-          res = await res.JSON();
-          console.log(res);
-          let fakeRequest = new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-            }, 1000);
-          });
-          await fakeRequest;
-          this.state = "nothome";
+          this.showLoadingSpinner = true;
+          try {
+            let res = await fetch(`${this.serverURL}/generate`, {
+              method: "POST",
+              body: JSON.stringify({
+                note: this.note,
+                octave: this.octave,
+                scale: this.scale,
+              }),
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+          } catch (err) {
+            console.log(err);
+          }
+          this.state = "rateMusic";
+          this.showLoadingSpinner = false;
         },
-        play() {
-          this.state = 1;
+        submitRatings() {
+          this.ratings = [];
+          document.querySelectorAll(".rating-input").forEach((node) => {
+            this.ratings.push(node.value);
+          });
+          // .map((ip) => ip.value);
+          console.log(this.ratings);
+        },
+        play(idx) {
           MIDI.loadPlugin({
             soundfontUrl: "./soundfont/",
             // instrument: "acoustic_grand_piano",
@@ -177,7 +229,7 @@
               MIDI.noteOff(0, note, delay + 0.75);
             },
           });
-          MIDI.Player.loadFile("../output/op.mid", () => {
+          MIDI.Player.loadFile(`../output/testmidi_${idx}`, () => {
             MIDI.Player.start();
             console.log("Playing");
           });

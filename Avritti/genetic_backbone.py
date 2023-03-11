@@ -1,8 +1,6 @@
 import random as rd
 
-
 class Genome:
-
     def __init__(self, length: int, mutation_probability=0.1, list_genome=None):
         '''
         Creates a list of 1's and 0's of the specified length
@@ -33,7 +31,6 @@ class Genome:
 
 
 class Population:
-
     def __init__(self, population_size, genome_size, fitness_function):
         self.population_size = population_size
         self.genome_size = genome_size

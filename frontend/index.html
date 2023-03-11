@@ -132,7 +132,7 @@
         <div class="flex">
           <article v-for="idx in populationSize" :key="idx">
             {{idx}}
-            <button @click="play(idx-1)">Play</button>
+            <button @click="play(idx)">Play</button>
             <label for="`rate${idx}`">Rate {{idx}}:</label>
             <input
               name="`rate${idx}`"
@@ -142,10 +142,10 @@
               class="rating-input"
             />
           </article>
-          <button id="submit-ratings" @click="submitRatings">
-            Submit Ratings
-          </button>
         </div>
+        <button id="submit-ratings" @click="submitRatings">
+          Submit Ratings
+        </button>
       </div>
     </main>
   </body>
@@ -180,6 +180,7 @@
           showLoadingSpinner: false,
           populationSize: 5,
           ratings: [],
+          midiList: [],
         };
       },
       methods: {
@@ -197,8 +198,10 @@
                 "Content-Type": "application/json",
               },
             });
+            res = await res.json();
+            this.midiList = res;
           } catch (err) {
-            console.log(err);
+            alert(err);
           }
           this.state = "rateMusic";
           this.showLoadingSpinner = false;
@@ -229,10 +232,13 @@
               MIDI.noteOff(0, note, delay + 0.75);
             },
           });
-          MIDI.Player.loadFile(`../output/testmidi_${idx}`, () => {
-            MIDI.Player.start();
-            console.log("Playing");
-          });
+          MIDI.Player.loadFile(
+            `data:audio/midi;base64,${this.midiList[idx - 1]}`,
+            () => {
+              MIDI.Player.start();
+              console.log("Playing");
+            }
+          );
         },
       },
     }).mount("#app");

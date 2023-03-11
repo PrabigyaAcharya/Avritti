@@ -2,3 +2,5 @@
 Lib
 Scripts
 ProjectEnv
+env
+__pycache__

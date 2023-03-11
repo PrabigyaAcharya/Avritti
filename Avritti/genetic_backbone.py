@@ -98,16 +98,16 @@ class Population:
 
 
 def fit(genome: Genome):
-    count1 = 0
-    for i in range(genome.length):
-        if genome.genome[i] == 1:
-            count1 += 1
-    return count1
+    # count1 = 0
+    # for i in range(genome.length):
+    #     if genome.genome[i] == 1:
+    #         count1 += 1
+    return rd.randint(0,6)
 
 
-popn = Population(10, 16, fit)
-for i in range(1000):
-    if popn.move_generation(debug=False):
-        print(i, popn.population[0])
-        break
+# popn = Population(10, 16, fit)
+# for i in range(1000):
+#     if popn.move_generation(debug=False):
+#         print(i, popn.population[0])
+#         break
 

@@ -1,22 +1,38 @@
-from pyo import *
+import random
+from midiutil import MIDIFile
+from genetic_backbone import Genome, Population
+import musical_scales
 
-# Creates a Server object with default arguments.
-# See the manual about how to change the sampling rate, the buffer
-# size, the number of channels or one of the other global settings.
-s = Server()
+def fit():
+    return random.randint(1, 5)
 
-# Boots the server. This step initializes audio and midi streams.
-# Audio and midi configurations (if any) must be done before that call.
-s.boot()
 
-# Starts the server. This step activates the server processing loop.
-s.start()
+def genome_midi_decoder(population, note:str = "C", octave:int = 3, bits_per_note=4, num_of_notes=64, scale:str = "major"):
 
-# Here comes the processing chain...
+    good_notes = musical_scales.scale(starting_note=note, octaves=octave, mode = scale)
+    track = 0
+    channel = 0
+    time = 0    # In beats
+    duration = 1    # In beats
+    tempo = 60   # In BPM
+    volume = 100  # 0-127, as per the MIDI standard
+    count = 0
+    try:
+        for genome in population.population:
+            notes = [genome.genome[i:i+bits_per_note] for i in range(num_of_notes)]
+            midinotes = [60+sum([bit*pow(2, index)
+                                for index, bit in enumerate(note)]) for note in notes]
+            MyMIDI = MIDIFile(1)  
+            MyMIDI.addTempo(track, time, tempo)
 
-# The Server object provides a Graphical User Interface with the
-# gui() method. One of its purpose is to keep the program alive
-# while computing samples over time. If the locals dictionary is
-# given as argument, the user can continue to send commands to the
-# python interpreter from the GUI.
-s.gui(locals())
+            for i, pitch in enumerate(midinotes):
+                MyMIDI.addNote(track, channel, pitch, time + i, duration, volume)
+            
+            file_name = "testmidi_" + str(count)
+            count+=1
+            with open(file_name, "wb") as output_file:
+                MyMIDI.writeFile(output_file)
+    except:
+        return False
+    return True
+

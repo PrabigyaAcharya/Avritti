@@ -31,26 +31,24 @@ class Genome:
 
 
 class Population:
-    def __init__(self, population_size, genome_size, fitness_function):
+    def __init__(self, population_size, genome_size):
         self.population_size = population_size
         self.genome_size = genome_size
         self.population = [Genome(length=genome_size)
                            for i in range(population_size)]
         self.fitness_values = [0 for i in range(population_size)]
         self.parents = [None, None]
-        self.fitness_function = fitness_function
 
     def __str__(self):
         return ", ".join(map(str, self.population))
 
-    def fitness(self):
+    def fitness(self,ratings):
         '''
         Takes a fitness function and calculates the fitness value 
         for the genomes according to the fitness function
         '''
         for i, genome in enumerate(self.population):
-            genome_fitness = self.fitness_function(genome)
-            self.fitness_values[i] = genome_fitness
+            self.fitness_values[i] = ratings[i]
 
     def parent_selection(self):
         '''
@@ -93,18 +91,4 @@ class Population:
         self.population = next_generation
         return False
 
-
-def fit(genome: Genome):
-    # count1 = 0
-    # for i in range(genome.length):
-    #     if genome.genome[i] == 1:
-    #         count1 += 1
-    return rd.randint(0,6)
-
-
-# popn = Population(10, 16, fit)
-# for i in range(1000):
-#     if popn.move_generation(debug=False):
-#         print(i, popn.population[0])
-#         break
 

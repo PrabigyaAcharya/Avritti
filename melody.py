@@ -1,11 +1,8 @@
 import random
 from midiutil import MIDIFile
-from genetic_backbone import Genom
+from genetic_backbone import Genome,Population
 import pyo
 
-
-def fit():
-    return random.randint(1, 6)
 
 NOTES_LIST =["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 PAUSE_PROBABILITY = 0.2

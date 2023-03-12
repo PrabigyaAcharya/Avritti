@@ -30,7 +30,7 @@ def new_gen(details:dict):
 @app.post("/generate")
 def gen(details:dict):
     base64_data=[]
-    genome_midi_decoder(population=popn,note=details["note"],octave=int(details["octave"]),scale=details["scale"])
+    population_midi_generator(population=popn,root_note=details["note"],octave=int(details["octave"]),scale=details["scale"])
     db["note"]=details["note"]
     db["octave"]=details["octave"]
     db["scale"]=details["scale"]

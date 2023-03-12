@@ -76,6 +76,4 @@ def population_midi_generator(population, root_note:str = "C", octave:int = 3, b
         print(count)
         count +=1
 
-popn = Population(4, 256)
-print(population_midi_generator(popn))
 

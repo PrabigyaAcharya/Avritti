@@ -71,7 +71,7 @@ def population_midi_generator(population, root_note:str = "C", octave:int = 3, b
                                time+i, melody["beat"][i], vel)
 
             time += melody["beat"][i]
-        with open(f"output/testmidi_{count}.mid", "wb") as f:
+        with open(f"output/testmidi_{count}", "wb") as f:
             mf.writeFile(f)
         print(count)
         count +=1

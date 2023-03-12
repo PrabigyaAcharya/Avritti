@@ -43,6 +43,13 @@ def gen(details:dict):
 
 @app.post("/rate")
 def rate(details:dict):
-    popn.fitness(ratings=details["ratings"])
-    popn.move_generation(debug=False)
-    return gen(db)
+    if(details["stop"]==False):
+        popn.fitness(ratings=details["ratings"])
+        popn.move_generation(debug=False)
+        return gen(db)
+    else:
+        index=details["ratings"].index(max(details["ratings"]))
+        file_name = f"output/testmidi_{str(index)}"
+        with open(file_name, "rb") as output_file:
+            return base64.b64encode(output_file.read())
+

@@ -17,29 +17,32 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
-# class Data(BaseModel):
-#     greeting:str
-
-db=[]
+db={"note":"D#","octave":"3","scale":"blues"}
 
 popn = Population(5, 256)  
 
+@app.post("/newgen")
+def new_gen(details:dict):
+    global popn
+    popn=Population(5,256)
+    return gen(details)
+
 @app.post("/generate")
-def test(details:dict):
+def gen(details:dict):
     base64_data=[]
     genome_midi_decoder(population=popn,note=details["note"],octave=int(details["octave"]),scale=details["scale"])
+    db["note"]=details["note"]
+    db["octave"]=details["octave"]
+    db["scale"]=details["scale"]
     for i in range(len(popn.population)):
         file_name = f"output/testmidi_{str(i)}"
         with open(file_name, "rb") as output_file:
             base64_file = base64.b64encode(output_file.read())
             base64_data.append(base64_file)
-    return base64_data
+    return {"generation":popn.generation_number,"midiList":base64_data}
 
 @app.post("/rate")
-def test(details:dict):
-    return popn.fitness(ratings=details["ratings"])
-    
-
-# @app.post("/hello")
-# def add_greeting(message:Data):
-#     db.append({"Hello":message.greeting})
+def rate(details:dict):
+    popn.fitness(ratings=details["ratings"])
+    popn.move_generation(debug=False)
+    return gen(db)

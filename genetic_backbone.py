@@ -1,7 +1,7 @@
 import random as rd
 
 class Genome:
-    def __init__(self, length: int, mutation_probability=0.1, list_genome=None):
+    def __init__(self, length: int, mutation_probability=0.1, list_genome=None,fitness_value=0):
         '''
         Creates a list of 1's and 0's of the specified length
         '''
@@ -10,6 +10,7 @@ class Genome:
         self.mutation_probability = mutation_probability
         if list_genome is not None:
             self.genome = list_genome
+        self.fitness_value=fitness_value
 
     def __str__(self):
         return "".join(map(str, self.genome))
@@ -31,6 +32,7 @@ class Genome:
 
 
 class Population:
+
     def __init__(self, population_size, genome_size):
         self.population_size = population_size
         self.genome_size = genome_size
@@ -38,6 +40,7 @@ class Population:
                            for i in range(population_size)]
         self.fitness_values = [0 for i in range(population_size)]
         self.parents = [None, None]
+        self.generation_number=1
 
     def __str__(self):
         return ", ".join(map(str, self.population))
@@ -49,7 +52,11 @@ class Population:
         '''
         for i, genome in enumerate(self.population):
             self.fitness_values[i] = ratings[i]
+            genome.fitness_value=ratings[i]
 
+    def fitness_value(self,genome:Genome):
+        return genome.fitness_value
+    
     def parent_selection(self):
         '''
         Choose parents from the population
@@ -65,14 +72,11 @@ class Population:
         '''
         Sort population based on fitness value
         '''
-        self.population.sort(key=self.fitness_function, reverse=True)
+        self.population.sort(key=self.fitness_value, reverse=True)
         self.fitness_values.sort(reverse=True)
 
     def move_generation(self, debug=True):
-        self.fitness()
         self.sort_population()
-        if self.fitness_values[0] == self.genome_size:
-            return True
         if debug:
             for p in self.population:
                 print(p, end=" ")
@@ -80,7 +84,7 @@ class Population:
         next_generation = self.population[:2]
 
         
-        for i in range(self.population_size // 2 - 1):
+        for i in range(self.population_size // 2 ):
             self.parent_selection()
             if debug:
                 print(self.parents[0], self.parents[1])
@@ -89,6 +93,5 @@ class Population:
             next_generation += [offsprings[0], offsprings[1]]
 
         self.population = next_generation
-        return False
-
-
+        self.population=self.population[:self.population_size]
+        self.generation_number+=1

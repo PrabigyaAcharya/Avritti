@@ -48,8 +48,11 @@ def rate(details:dict):
         popn.move_generation(debug=False)
         return gen(db)
     else:
+        base64_data=[]
         index=details["ratings"].index(max(details["ratings"]))
         file_name = f"output/testmidi_{str(index)}"
         with open(file_name, "rb") as output_file:
-            return base64.b64encode(output_file.read())
+            base64_data.append(base64.b64encode(output_file.read()))
+        return {"generation":-1,"midiList":base64_data}
+
 

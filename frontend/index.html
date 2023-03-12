@@ -150,6 +150,7 @@
           </form>
         </div>
         <div id="rate-music" v-if="state=='rateMusic'">
+          <h2>Generation {{generation}}</h2>
           <div class="flex">
             <article v-for="idx in populationSize" :key="idx">
               <header><center>Sample {{idx}}</center></header>
@@ -187,7 +188,7 @@
         return {
           message: "Hello Vue!",
           state: "home",
-          scaleList: ["major", "acoustic", "blues", "lydian"],
+          scaleList: ["majorPenta", "acoustic", "blues", "lydian"],
           startNoteList: [
             "C",
             "C#",
@@ -202,15 +203,16 @@
             "A#",
             "B",
           ],
-          scale: "blues",
-          note: "D#",
-          octave: "3",
+          scale: "majorPenta",
+          note: "C",
+          octave: "4",
           serverURL: "http://127.0.0.1:8000",
           showLoadingSpinner: false,
           populationSize: 5,
           ratings: [],
           midiList: [],
           stopGeneration: false,
+          generation: 0,
         };
       },
 
@@ -218,7 +220,7 @@
         async startGeneration() {
           this.showLoadingSpinner = true;
           try {
-            let res = await fetch(`${this.serverURL}/generate`, {
+            let res = await fetch(`${this.serverURL}/newgen`, {
               method: "POST",
               body: JSON.stringify({
                 note: this.note,
@@ -230,7 +232,8 @@
               },
             });
             res = await res.json();
-            this.midiList = res;
+            this.midiList = res.midiList;
+            this.generation = res.generation;
           } catch (err) {
             alert(err);
           }
@@ -242,24 +245,27 @@
 
           this.ratings = [];
           document.querySelectorAll(".rating-input").forEach((node) => {
-            this.ratings.push(node.value);
+            this.ratings.push(parseInt(node.value));
           });
           // .map((ip) => ip.value);
-          console.log(this.ratings);
-          await fetch(`${this.serverURL}/rate`, {
+
+          let newRes = await fetch(`${this.serverURL}/rate`, {
             method: "POST",
             body: JSON.stringify({
-              stopGeneration: this.stopGeneration,
+              stop: this.stopGeneration,
               ratings: this.ratings,
             }),
             headers: {
               "Content-Type": "application/json",
             },
           });
+          newRes = await newRes.json();
+          console.log(newRes);
+          this.midiList = newRes.midiList;
+          this.generation = newRes.generation;
           this.showLoadingSpinner = false;
         },
         goHome() {
-          console.log("hello");
           this.state = "home";
         },
         mounted() {
@@ -268,23 +274,16 @@
             // instrument: "acoustic_grand_piano",
             instrument: "synth_drum",
             onprogress: function (state, progress) {
-              console.log(state, progress);
-            },
-            onsuccess: function () {
-              var delay = 0; // play one note every quarter second
-              var note = 50; // the MIDI note
-              var velocity = 127; // how hard the note hits
-              // play the note
-              MIDI.setVolume(0, 127);
-              MIDI.noteOn(0, note, velocity, delay);
-              MIDI.noteOff(0, note, delay + 0.75);
+              console.log("Tabla loaded");
             },
           });
         },
         play(idx) {
           MIDI.Player.loadFile(
+            // `../output/testmidi_${idx - 1}.mid`,
             `data:audio/midi;base64,${this.midiList[idx - 1]}`,
             () => {
+              console.log(this.midiList[idx - 1]);
               MIDI.Player.start();
               this.isPlaying = true;
             }

@@ -46,7 +46,7 @@ def population_midi_generator(population, root_note:str = "C", octave:int = 4, b
                     melody["beat"][-1] +=note_length
                 else:
                     melody["notes"] += [note]
-                    melody["velocity"] += [127]
+                    melody["velocity"] += random.choices([x for x in range(50, 120)])
                     melody["beat"] += [note_length]
         steps = []
         for step in range(chord_step):

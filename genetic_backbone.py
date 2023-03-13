@@ -32,7 +32,6 @@ class Genome:
 
 
 class Population:
-
     def __init__(self, population_size, genome_size):
         self.population_size = population_size
         self.genome_size = genome_size
@@ -83,7 +82,6 @@ class Population:
             print(f"\nFitness Values: {self.fitness_values}")
         next_generation = self.population[:2]
 
-        
         for i in range(self.population_size // 2 ):
             self.parent_selection()
             if debug:

@@ -150,9 +150,10 @@
           </form>
         </div>
         <div id="rate-music" v-if="state=='rateMusic'">
-          <h2>Generation {{generation}}</h2>
+          <h2 v-if="generation != -1">Generation {{generation}}</h2>
+          <h2 v-else>Final Result!</h2>
           <div class="flex">
-            <article v-for="idx in populationSize" :key="idx">
+            <article v-for="idx in midiList.length" :key="idx">
               <header><center>Sample {{idx}}</center></header>
               <button @click="play(idx)">Play</button>
               <label for="`rate${idx}`">Rate {{idx}}:</label>
@@ -208,7 +209,6 @@
           octave: "4",
           serverURL: "http://127.0.0.1:8000",
           showLoadingSpinner: false,
-          populationSize: 5,
           ratings: [],
           midiList: [],
           stopGeneration: false,

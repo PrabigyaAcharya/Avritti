@@ -17,7 +17,7 @@ def population_midi_generator(population, root_note:str = "C", octave:int = 4, b
     count = 0
     is_pausing = PAUSE_PROBABILITY > random.random()
 
-    note_length = 4/ float(bits_per_note)
+    note_length = 4/float(bits_per_note)
 
     scl = pyo.EventScale(root=root_note, 
                          scale = scale, 

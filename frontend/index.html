@@ -156,13 +156,17 @@
             <article v-for="idx in midiList.length" :key="idx">
               <header><center>Sample {{idx}}</center></header>
               <button @click="play(idx)">Play</button>
-              <label for="`rate${idx}`">Rate {{idx}}:</label>
+              <label for="`rate${idx}`"
+                >Current rating: {{ratings[idx-1]}}</label
+              >
               <input
                 name="`rate${idx}`"
+                v-model="`rate${idx}`"
                 type="range"
                 min="1"
                 max="5"
                 class="rating-input"
+                @change="ratingChanged"
               />
             </article>
           </div>
@@ -173,9 +177,16 @@
               name="stopGeneration"
             />Stop Generation?
           </label>
-          <button id="submit-ratings" @click="submitRatings">
+          <button
+            id="submit-ratings"
+            @click="submitRatings"
+            v-if="generation!=-1"
+          >
             Submit Ratings
           </button>
+          <a v-else downlaod="bessSong.mid" :href="downloadLink" role="button"
+            >Download</a
+          >
         </div>
       </main>
     </div>
@@ -209,10 +220,11 @@
           octave: "4",
           serverURL: "http://127.0.0.1:8000",
           showLoadingSpinner: false,
-          ratings: [],
+          ratings: [5, 5, 5, 5, 5],
           midiList: [],
           stopGeneration: false,
           generation: 0,
+          downloadLink: "",
         };
       },
 
@@ -243,10 +255,6 @@
         async submitRatings() {
           this.showLoadingSpinner = true;
 
-          this.ratings = [];
-          document.querySelectorAll(".rating-input").forEach((node) => {
-            this.ratings.push(parseInt(node.value));
-          });
           // .map((ip) => ip.value);
 
           let newRes = await fetch(`${this.serverURL}/rate`, {
@@ -263,6 +271,9 @@
           console.log(newRes);
           this.midiList = newRes.midiList;
           this.generation = newRes.generation;
+          if (this.generation == -1) {
+            this.downloadLink = `data:audio/midi;base64,${this.midiList[0]}`;
+          }
           this.showLoadingSpinner = false;
         },
         goHome() {
@@ -288,6 +299,13 @@
               this.isPlaying = true;
             }
           );
+        },
+        ratingChanged() {
+          console.log("1");
+          this.ratings = [];
+          document.querySelectorAll(".rating-input").forEach((node) => {
+            this.ratings.push(parseInt(node.value));
+          });
         },
       },
     }).mount("#app");

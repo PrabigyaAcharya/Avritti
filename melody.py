@@ -10,7 +10,11 @@ PAUSE_PROBABILITY = 0.2
 def genome_to_notes(genome, bits_per_note, num_of_notes):
     notes = [genome.genome[i*bits_per_note:i*bits_per_note+bits_per_note] for i in range(num_of_notes)]
     int_notes = [sum([bit*pow(2, index) for index, bit in enumerate(note)]) for note in notes]
-    return int_notes
+    velocity_values = [genome.genome[i*bits_per_note:i*bits_per_note +
+                                     bits_per_note] for i in range(num_of_notes, num_of_notes*2)]
+    int_velo = [5 * sum([bit*pow(2, index) for index,
+                        bit in enumerate(note)]) + 25 for note in velocity_values]
+    return int_notes, int_velo
 
 
 def population_midi_generator(population, root_note:str = "C", octave:int = 4, bits_per_note=4, num_of_notes=32, scale:str = "major", chord_step = 2):
@@ -31,9 +35,8 @@ def population_midi_generator(population, root_note:str = "C", octave:int = 4, b
             "velocity": [],
             "beat": []
         }
-        notes = genome_to_notes(genome, bits_per_note, num_of_notes)
-        print(notes)
-        for note in notes:
+        notes, velocities = genome_to_notes(genome, bits_per_note, num_of_notes)
+        for j, note in enumerate(notes):
             if not is_pausing:
                 note = int(note %pow(2, bits_per_note-1))
 
@@ -46,14 +49,13 @@ def population_midi_generator(population, root_note:str = "C", octave:int = 4, b
                     melody["beat"][-1] +=note_length
                 else:
                     melody["notes"] += [note]
-                    melody["velocity"] += random.choices([x for x in range(50, 120)])
+                    melody["velocity"] += [velocities[j]]
                     melody["beat"] += [note_length]
         steps = []
         for step in range(chord_step):
             steps.append([scl[(note+step*2) % len(scl)]
                         for note in melody["notes"]])
         melody["notes"] = steps
-        print(melody)
 
         mf = MIDIFile(1)
         track = 0
